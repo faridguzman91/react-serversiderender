@@ -17,7 +17,7 @@ const Alert = styled.div`
 text-align: center;
 `;
 
-const ROOT_API = 'https:/api.stackexchange.com/2.2';
+const ROOT_API = 'https://api.stackexchange.com/2.2/';
 
 class Feed extends React.Component {
     constructor() {
@@ -29,7 +29,9 @@ class Feed extends React.Component {
         };
     }
 
-    //mounten als data gefetchd wordt await try.. catch
+    //mounten als data gefetchd wordt await try.. catch 
+    //fetch data uit StackOverflow api
+    
     async componentDidMount() {
         try {
             const data = await fetch(
@@ -60,6 +62,8 @@ class Feed extends React.Component {
         if (loading || error) {
             return <Alert>{loading ? 'Loading...' : error}</Alert>
         }
+
+        //data items mappen id onder elkaar in feedwrapper
 
         return (
             <FeedWrapper>
