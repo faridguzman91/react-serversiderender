@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
 import Card from '../components/card/card'
+//import link
+import { Link } from 'react-router-dom'
 
 //feedwrapper styled css props
 
@@ -15,6 +17,11 @@ margin: 5%;
 
 const Alert = styled.div`
 text-align: center;
+`;
+
+const CardLink = styled(Link)`
+text-decoration: none;
+color: inherit;
 `;
 
 const ROOT_API = 'https://api.stackexchange.com/2.2/';
@@ -67,9 +74,12 @@ class Feed extends React.Component {
 
         return (
             <FeedWrapper>
-            {data.items.map(item => (
-                <Card key={item.question_id} data={item} />
-            ))}
+            {data.items.map(item => 
+                <CardLink key={item.question_id} to={`/questions/${item.question_id}`}>
+                <Card data={item} />
+                </CardLink>
+                //<Card key={item.question_id} data={item} />
+            )};
             </FeedWrapper>
         );
     }
