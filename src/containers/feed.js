@@ -3,6 +3,10 @@ import styled from 'styled-components';
 import Card from '../components/card/card'
 //import link
 import { Link } from 'react-router-dom'
+//import queryString 
+import queryString from 'query-string';
+import Helmet from 'react-helmet';
+
 
 //feedwrapper styled css props
 
@@ -24,13 +28,30 @@ text-decoration: none;
 color: inherit;
 `;
 
+const PaginationBar = styled.div`
+width: 100%;
+display: flex;
+justify-content: space-between;
+`;
+
+const PaginationLink = styled(Link)`
+padding: 1%;
+background: lightBlue;
+color: white;
+text-decoration: none;
+border-radius: 5px;
+`;
+
 const ROOT_API = 'https://api.stackexchange.com/2.2/';
 
-class Feed extends React.Component {
-    constructor() {
-        super();
+//met queryString kan in parseInt toevoegen, nu is de pagina een integer ipv string
+class Feed extends Component {
+    constructor(props) {
+        super(props);
+        const query = queryString.parse(props.location.search);
         this.state = {
             data: [],
+            page: (query.page) ? parseInt(query.page) : 1,
             loading: true,
             error: '',
         };
@@ -39,22 +60,19 @@ class Feed extends React.Component {
     //mounten als data gefetchd wordt await try.. catch 
     //fetch data uit StackOverflow api
     
-    async componentDidMount() {
+
+
+    async fetchAPI(page) {
         try {
-            const data = await fetch(
-                `${ROOT_API}questions?order=desc&sort=activity&tagged=reactjs&site=stackoverflow`,
-            );
+            const data = await fetch(`${ROOT_API}questions?order=desc&sort=activity&tagged=reactjs&site=stackoverflow${(page) ? `&page=${page}` : ''}`);
             const dataJSON = await data.json();
 
-            //set state
-
-            if(data.JSON) {
+            if (dataJSON) {
                 this.setState({
                     data: dataJSON,
                     loading: false,
                 });
             }
-            //foutmelden
         } catch (error) {
             this.setState({
                 loading: false,
@@ -63,14 +81,39 @@ class Feed extends React.Component {
         }
     }
 
+    componentDidMount() {
+        const { page } = this.state;
+        this.fetchAPI(page);
+    }
+
+    //check als query strings geupdate of veranderd zijn
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.location.search !== this.props.location.search) {
+            const query = queryString.parse(this.props.loction.search);
+            this.setState({ page: parseInt(query.page) }, () =>
+            this.fetchAPI(this.state.page),);
+        }
+    }
+
     render() {
-        const { data, loading, error } = this.state;
+        //const { data, loading, error } = this.state;
+
+        const { data, page, loading, error } = this.state;
+        const { match } = this.props;
 
         if (loading || error) {
-            return <Alert>{loading ? 'Loading...' : error}</Alert>
+            return <>
+                <Helmet>
+                    <title>Q&A Feed - Questions</title>
+                </Helmet>
+                <Alert>{loading ? 'Loading...' : error}</Alert>
+            </>
         }
 
         //data items mappen id onder elkaar in feedwrapper
+
+        //url wordt vanuit the match prop genomen en de huidige pagina nummer in state
 
         return (
             <FeedWrapper>
@@ -79,7 +122,14 @@ class Feed extends React.Component {
                 <Card data={item} />
                 </CardLink>
                 //<Card key={item.question_id} data={item} />
-            )};
+                )};
+                <PaginationBar>
+                {page > 1 && <PaginationLink to={`${match.url}?page=${page - 1}`}>Previous</PaginationLink>}
+
+                {data.has_more && <PaginationLink to={`${match.url}?page=${page + 1}`}>Next</PaginationLink>}
+
+                </PaginationBar>
+            
             </FeedWrapper>
         );
     }

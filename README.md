@@ -13,6 +13,11 @@ packages
 npm install--save-dev / yarn install --save-dev
 
 *create-react-app
+<br>
 *styled-components
+<br>
 *react-router
+<br>
 *react-router-dom
+<br>
+express
